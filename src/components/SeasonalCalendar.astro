@@ -1,0 +1,80 @@
+---
+const seasons = [
+  {
+    name: 'Spring',
+    months: 'Mar – May',
+    color: 'bg-green-50 border-green-200',
+    headingColor: 'text-green-800',
+    tasks: [
+      'Check for winter survival — look for eggs and a laying queen',
+      'Reverse hive bodies to give bees room to expand upward',
+      'Watch for swarm cells as the colony builds up',
+      'Add supers before the main nectar flow begins',
+      'Treat for varroa if mite count is above threshold',
+    ],
+  },
+  {
+    name: 'Summer',
+    months: 'Jun – Aug',
+    color: 'bg-yellow-50 border-yellow-200',
+    headingColor: 'text-yellow-800',
+    tasks: [
+      'Monitor varroa — mite loads peak with brood production',
+      'Harvest honey at the end of the main flow (80%+ capped frames)',
+      'Keep water available near the hive in heat',
+      'Watch for wax moths and small hive beetles',
+      'Treat for varroa in late summer to protect winter bees',
+    ],
+  },
+  {
+    name: 'Autumn',
+    months: 'Sep – Nov',
+    color: 'bg-orange-50 border-orange-200',
+    headingColor: 'text-orange-800',
+    tasks: [
+      'Weigh or heft the hive — 60–80 lbs of stores needed for winter',
+      'Feed 2:1 sugar syrup if stores are low (stop by October)',
+      'Install mouse guards on the entrance',
+      'Reduce entrance to limit robbing and cold drafts',
+      'Final varroa treatment before the colony clusters',
+    ],
+  },
+  {
+    name: 'Winter',
+    months: 'Dec – Feb',
+    color: 'bg-blue-50 border-blue-200',
+    headingColor: 'text-blue-800',
+    tasks: [
+      "Don't open the hive below 40°F — you'll break the cluster",
+      'Heft monthly to check stores; add fondant or candy board if light',
+      'Ensure top ventilation — moisture kills more colonies than cold',
+      'Clear snow from the entrance after heavy snowfall',
+      'Order new equipment and queens for spring while stock is available',
+    ],
+  },
+];
+---
+<section class="bg-amber-50 py-16 px-4">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-2xl font-semibold text-amber-900 mb-2">Seasonal Calendar</h2>
+    <p class="text-amber-700 text-sm mb-8">What to focus on each season in a temperate climate.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {seasons.map((s) => (
+        <div class={`border rounded-xl p-5 ${s.color}`}>
+          <div class="mb-3">
+            <h3 class={`font-semibold text-lg ${s.headingColor}`}>{s.name}</h3>
+            <p class="text-xs text-gray-500">{s.months}</p>
+          </div>
+          <ul class="space-y-2">
+            {s.tasks.map((t) => (
+              <li class="text-sm text-gray-700 flex gap-2">
+                <span class="shrink-0 mt-0.5">•</span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
