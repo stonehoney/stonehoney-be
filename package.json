@@ -1,0 +1,16 @@
+{
+  "name": "stonehoney-be",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
+    "@astrojs/vercel": "^10.0.8",
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.4.3",
+    "tailwindcss": "^4.3.0"
+  }
+}

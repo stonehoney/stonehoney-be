@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -fsSL \"https://github.com/cli/cli/releases/download/v2.93.0/gh_2.93.0_macOS_arm64.zip\" -o gh.zip)",
+      "Bash(unzip -q gh.zip)",
+      "Bash(mkdir -p ~/bin)",
+      "Bash(cp gh_2.93.0_macOS_arm64/bin/gh ~/bin/gh)",
+      "Skill(office-hours)",
+      "Bash(~/.bun/bin/bun install *)",
+      "Bash(~/.bun/bin/bun run *)",
+      "Bash(curl -s http://localhost:4321)",
+      "Bash(~/.bun/bin/bun remove *)",
+      "Bash(~/.bun/bin/bun add *)",
+      "Bash(curl -s -X POST http://localhost:4321/api/chat -H 'Content-Type: application/json' -d '{\"question\":\"when is the best time to inspect a hive?\"}')",
+      "Bash(pkill -f \"astro dev\")",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(~/bin/gh repo *)",
+      "Read(//Users/peterstone/.local/share/com.vercel.cli/**)",
+      "Read(//Users/peterstone/.config/vercel/**)",
+      "Read(//Users/peterstone/**)"
+    ]
+  }
+}

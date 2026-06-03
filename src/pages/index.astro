@@ -1,0 +1,158 @@
+---
+import '../styles/global.css';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beekeeping Q&A — Ask a Master Beekeeper</title>
+  <meta name="description" content="Get specific, practical answers to your beekeeping questions. Powered by 20+ years of hive management experience." />
+  <meta property="og:title" content="Beekeeping Q&A — Ask a Master Beekeeper" />
+  <meta property="og:description" content="Get specific, practical answers to your beekeeping questions — hive health, varroa, swarm prevention, honey harvest, and more." />
+  <meta property="og:type" content="website" />
+</head>
+<body class="bg-amber-50 min-h-screen flex flex-col">
+
+  <header class="border-b border-amber-200 bg-white px-4 py-4">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-xl font-semibold text-amber-900">🐝 Beekeeping Q&A</h1>
+      <p class="text-sm text-amber-700 mt-0.5">Ask anything about hive management, bee health, and beekeeping practice.</p>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col max-w-2xl w-full mx-auto px-4 py-6 gap-4">
+
+    <!-- Message thread -->
+    <div id="messages" class="flex-1 flex flex-col gap-4 min-h-[200px]">
+      <div class="text-sm text-amber-700 italic text-center mt-8">
+        Ask your first question below — try "how do I know if my queen is laying?"
+      </div>
+    </div>
+
+    <!-- Error banner -->
+    <div id="error-banner" class="hidden bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700"></div>
+
+    <!-- Input -->
+    <form id="chat-form" class="flex gap-2 items-end border-t border-amber-200 pt-4">
+      <textarea
+        id="question-input"
+        rows="2"
+        placeholder="What's your beekeeping question?"
+        class="flex-1 resize-none rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-amber-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+      ></textarea>
+      <button
+        type="submit"
+        id="submit-btn"
+        class="shrink-0 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        Ask
+      </button>
+    </form>
+    <p class="text-xs text-amber-600 text-center -mt-2">
+      For treatment dosing, always verify with your local authority or product label.
+    </p>
+
+  </main>
+
+  <script>
+    const form = document.getElementById('chat-form') as HTMLFormElement;
+    const input = document.getElementById('question-input') as HTMLTextAreaElement;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const messages = document.getElementById('messages') as HTMLDivElement;
+    const errorBanner = document.getElementById('error-banner') as HTMLDivElement;
+
+    function showError(msg: string) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.remove('hidden');
+      setTimeout(() => errorBanner.classList.add('hidden'), 6000);
+    }
+
+    function addMessage(role: 'user' | 'assistant', text: string = ''): HTMLElement {
+      // Clear placeholder on first message
+      const placeholder = messages.querySelector('.italic');
+      if (placeholder) placeholder.remove();
+
+      const wrapper = document.createElement('div');
+      wrapper.className = role === 'user'
+        ? 'flex justify-end'
+        : 'flex justify-start';
+
+      const bubble = document.createElement('div');
+      bubble.className = role === 'user'
+        ? 'max-w-[85%] rounded-2xl rounded-tr-sm bg-amber-600 px-4 py-3 text-sm text-white'
+        : 'max-w-[85%] rounded-2xl rounded-tl-sm bg-white border border-amber-200 px-4 py-3 text-sm text-gray-800 whitespace-pre-wrap';
+      bubble.textContent = text;
+
+      wrapper.appendChild(bubble);
+      messages.appendChild(wrapper);
+      messages.scrollTop = messages.scrollHeight;
+
+      return bubble;
+    }
+
+    // Submit on Enter (Shift+Enter = newline)
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = input.value.trim();
+      if (!question) return;
+
+      input.value = '';
+      submitBtn.disabled = true;
+      errorBanner.classList.add('hidden');
+
+      addMessage('user', question);
+      const responseBubble = addMessage('assistant', '▋');
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question }),
+        });
+
+        if (res.status === 429) {
+          responseBubble.remove();
+          showError("You've hit the hourly limit (10 questions). Come back in an hour.");
+          return;
+        }
+
+        if (!res.ok || !res.body) {
+          responseBubble.remove();
+          showError('Something went wrong. Check your connection and try again.');
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let text = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          text += decoder.decode(value, { stream: true });
+          responseBubble.textContent = text + '▋';
+          messages.scrollTop = messages.scrollHeight;
+        }
+
+        responseBubble.textContent = text;
+
+      } catch {
+        responseBubble.remove();
+        showError('Something went wrong. Check your connection and try again.');
+      } finally {
+        submitBtn.disabled = false;
+        input.focus();
+      }
+    });
+  </script>
+
+</body>
+</html>
