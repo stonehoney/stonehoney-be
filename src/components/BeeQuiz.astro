@@ -1,0 +1,151 @@
+---
+---
+<section class="bg-white py-16 px-4">
+  <div class="max-w-2xl mx-auto">
+    <h2 class="text-2xl font-semibold text-amber-900 mb-2">Test Your Beekeeping Knowledge</h2>
+    <p class="text-amber-700 text-sm mb-8">Five questions. See where to dig deeper.</p>
+
+    <div id="quiz-container" class="flex flex-col gap-6"></div>
+
+    <div id="quiz-results" class="hidden mt-8 p-5 bg-amber-50 border border-amber-200 rounded-xl">
+      <p id="results-summary" class="font-semibold text-amber-900 mb-4"></p>
+      <div id="followup-questions" class="flex flex-col gap-2"></div>
+    </div>
+
+    <button
+      id="retake-btn"
+      class="hidden mt-4 text-sm text-amber-600 underline hover:text-amber-800"
+    >
+      Retake quiz
+    </button>
+  </div>
+</section>
+
+<script>
+  const QUESTIONS = [
+    {
+      q: "When is the best time of day to inspect a hive?",
+      options: ["Early morning before 9am", "Mid-morning to early afternoon (10am–2pm)", "Evening when bees are home", "Anytime is fine"],
+      correct: 1,
+      followup: "When is the best time to inspect a hive, and why does it matter?",
+    },
+    {
+      q: "What does it mean if you find multiple eggs in a single cell?",
+      options: ["The queen is very productive", "You have a laying worker", "The bees are preparing to swarm", "Nothing unusual"],
+      correct: 1,
+      followup: "What is a laying worker and how do I fix it?",
+    },
+    {
+      q: "At what mite threshold should you treat for varroa?",
+      options: ["10 mites per 100 bees", "5 mites per 100 bees", "2 mites per 100 bees", "Only when you see visible mites on bees"],
+      correct: 2,
+      followup: "What is the varroa mite treatment threshold and how do I test my mite levels?",
+    },
+    {
+      q: "What's the primary sign that a colony is queenless?",
+      options: ["Bees are more aggressive", "No eggs or young larvae present", "Fewer bees than usual", "Lots of honey being stored"],
+      correct: 1,
+      followup: "How do I diagnose a queenless hive and what should I do about it?",
+    },
+    {
+      q: "When should you stop feeding sugar syrup in autumn?",
+      options: ["When the first frost hits", "By October — bees need time to cure it before winter", "Keep feeding until the hive is heavy enough", "Stop in August to avoid robbing"],
+      correct: 1,
+      followup: "When and how should I feed my bees in autumn to prepare for winter?",
+    },
+  ];
+
+  const container = document.getElementById('quiz-container') as HTMLDivElement;
+  const resultsDiv = document.getElementById('quiz-results') as HTMLDivElement;
+  const summary = document.getElementById('results-summary') as HTMLParagraphElement;
+  const followupDiv = document.getElementById('followup-questions') as HTMLDivElement;
+  const retakeBtn = document.getElementById('retake-btn') as HTMLButtonElement;
+
+  let answered: (number | null)[] = Array(QUESTIONS.length).fill(null);
+
+  function render() {
+    container.innerHTML = '';
+    QUESTIONS.forEach((q, qi) => {
+      const block = document.createElement('div');
+      block.className = 'border border-amber-100 rounded-xl p-5 bg-amber-50';
+
+      const question = document.createElement('p');
+      question.className = 'font-medium text-gray-900 mb-3 text-sm';
+      question.textContent = `${qi + 1}. ${q.q}`;
+      block.appendChild(question);
+
+      const opts = document.createElement('div');
+      opts.className = 'flex flex-col gap-2';
+
+      q.options.forEach((opt, oi) => {
+        const btn = document.createElement('button');
+        const isAnswered = answered[qi] !== null;
+        const isSelected = answered[qi] === oi;
+        const isCorrect = oi === q.correct;
+
+        let cls = 'text-left text-sm px-3 py-2 rounded-lg border transition-colors ';
+        if (!isAnswered) {
+          cls += 'bg-white border-amber-200 hover:border-amber-400 hover:bg-amber-100 text-gray-800';
+        } else if (isCorrect) {
+          cls += 'bg-green-50 border-green-400 text-green-800 font-medium';
+        } else if (isSelected && !isCorrect) {
+          cls += 'bg-red-50 border-red-300 text-red-700';
+        } else {
+          cls += 'bg-white border-amber-100 text-gray-400 cursor-default';
+        }
+
+        btn.className = cls;
+        btn.textContent = opt;
+        btn.disabled = isAnswered;
+
+        btn.addEventListener('click', () => {
+          answered[qi] = oi;
+          render();
+          checkAllAnswered();
+        });
+
+        opts.appendChild(btn);
+      });
+
+      block.appendChild(opts);
+      container.appendChild(block);
+    });
+  }
+
+  function checkAllAnswered() {
+    if (answered.some(a => a === null)) return;
+
+    const correct = answered.filter((a, i) => a === QUESTIONS[i].correct).length;
+    const wrong = QUESTIONS.filter((q, i) => answered[i] !== q.correct);
+
+    resultsDiv.classList.remove('hidden');
+    retakeBtn.classList.remove('hidden');
+
+    if (wrong.length === 0) {
+      summary.textContent = `Perfect score! ${correct}/${QUESTIONS.length} — you know your stuff.`;
+      followupDiv.innerHTML = '<p class="text-sm text-amber-700">No gaps found. Ask the beekeeper anything you\'re curious about.</p>';
+    } else {
+      summary.textContent = `${correct}/${QUESTIONS.length} correct. Here\'s what to dig into:`;
+      followupDiv.innerHTML = '';
+      wrong.forEach(q => {
+        const btn = document.createElement('button');
+        btn.className = 'text-left text-sm bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors';
+        btn.textContent = `Ask: "${q.followup}"`;
+        btn.addEventListener('click', () => {
+          window.dispatchEvent(new CustomEvent('beekeeping:ask', { detail: q.followup }));
+          document.getElementById('ask')?.scrollIntoView({ behavior: 'smooth' });
+        });
+        followupDiv.appendChild(btn);
+      });
+    }
+  }
+
+  retakeBtn.addEventListener('click', () => {
+    answered = Array(QUESTIONS.length).fill(null);
+    resultsDiv.classList.add('hidden');
+    retakeBtn.classList.add('hidden');
+    render();
+  });
+
+  render();
+</script>
