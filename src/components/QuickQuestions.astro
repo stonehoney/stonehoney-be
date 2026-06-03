@@ -1,0 +1,33 @@
+---
+const questions = [
+  "What's the best time to inspect a hive?",
+  "How do I spot a laying worker?",
+  "When should I treat for varroa?",
+  "How do I know if my queen is laying?",
+  "What causes bees to swarm?",
+  "When should I harvest honey?",
+];
+---
+<section class="bg-amber-50 pt-12 px-4">
+  <div class="max-w-2xl mx-auto">
+    <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-3">Common questions</p>
+    <div class="flex flex-wrap gap-2">
+      {questions.map((q) => (
+        <button
+          class="quick-q text-sm bg-white border border-amber-200 text-amber-800 px-3 py-1.5 rounded-full hover:border-amber-400 hover:bg-amber-100 transition-colors text-left"
+          data-question={q}
+        >
+          {q}
+        </button>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.quick-q').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('beekeeping:ask', { detail: btn.dataset.question }));
+    });
+  });
+</script>
